@@ -8,12 +8,19 @@ import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 import tkinter.scrolledtext as scrolledtext
 import os
-import sys
 import threading
-from pathlib import Path
+
+# Try to import tkinterdnd2 for drag-and-drop support
+try:
+    from tkinterdnd2 import TkinterDnD, DND_FILES
+    TKDND_AVAILABLE = True
+except ImportError:
+    TKDND_AVAILABLE = False
+    TkinterDnD = tk.Tk  # fallback
+    DND_FILES = None
 
 # Import the converter logic from our original script
-from py_to_md import PythonToMarkdownConverter, ErrorType
+from py_to_md import PythonToMarkdownConverter
 
 
 class PythonToMarkdownGUI:
@@ -37,6 +44,14 @@ class PythonToMarkdownGUI:
 
         # Setup the GUI
         self.setup_gui()
+
+        # Register drag and drop if available
+        if TKDND_AVAILABLE and DND_FILES:
+            self.drop_area.drop_target_register(DND_FILES)
+            self.drop_area.dnd_bind('<<Drop>>', self.on_drop)
+            self.update_drop_area_text("Drag Python file here\nor click Browse above")
+        else:
+            self.update_drop_area_text("Drag & drop not available\nclick Browse above")
 
     def setup_gui(self):
         """Setup the graphical user interface"""
@@ -70,7 +85,7 @@ class PythonToMarkdownGUI:
                                command=self.browse_input_file)
         browse_btn.grid(row=0, column=1)
 
-        # Drag and drop area simulation (tkinter doesn't have native DnD for files easily)
+        # Drag and drop area
         ttk.Label(main_frame, text="Or drag & drop Python file here:").grid(
             row=2, column=0, columnspan=3, sticky=tk.W, pady=(10, 5))
 
@@ -145,6 +160,29 @@ class PythonToMarkdownGUI:
     def update_drop_area_text(self, text):
         """Update the drag and drop area text"""
         self.drop_area.config(text=text)
+
+    def on_drop(self, event):
+        """Handle drag and drop event"""
+        try:
+            # Use Tk's splitlist to properly handle curly braces and spaces
+            file_list = self.root.tk.splitlist(event.data)
+            if not file_list:
+                self.update_drop_area_text("No files dropped")
+                return
+            # Take the first file that is a .py file
+            file_path = None
+            for f in file_list:
+                if f.lower().endswith('.py') and os.path.isfile(f):
+                    file_path = f
+                    break
+            if file_path is None:
+                # If no .py file, maybe show first file anyway? but we require .py
+                self.update_drop_area_text("Please drop a .py file")
+                return
+            self.input_file_path.set(file_path)
+            self.update_drop_area_text(f"Selected: {os.path.basename(file_path)}")
+        except Exception as e:
+            self.update_drop_area_text(f"Drop error: {e}")
 
     def start_conversion(self):
         """Start the conversion process in a separate thread"""
@@ -266,7 +304,10 @@ class PythonToMarkdownGUI:
         self.output_file_path.set("")
         self.verbose_mode.set(False)
         self.highlight_errors.set(True)
-        self.update_drop_area_text("Drag Python file here\nor click Browse above")
+        if TKDND_AVAILABLE and DND_FILES:
+            self.update_drop_area_text("Drag Python file here\nor click Browse above")
+        else:
+            self.update_drop_area_text("Drag & drop not available\nclick Browse above")
         self.output_text.delete(1.0, tk.END)
         self.save_btn.config(state=tk.DISABLED)
         self.copy_btn.config(state=tk.DISABLED)
@@ -275,7 +316,12 @@ class PythonToMarkdownGUI:
 
 def main():
     """Main entry point for the GUI application"""
-    root = tk.Tk()
+    if TKDND_AVAILABLE:
+        root = TkinterDnD.Tk()
+    else:
+        root = tk.Tk()
+        # Show a warning that drag-and-drop is not available
+        # We'll let the GUI handle it via the drop area text
     app = PythonToMarkdownGUI(root)
 
     # Handle window closing properly

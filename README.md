@@ -9,19 +9,25 @@ A tool that converts Python source code to structured markdown format, making it
 - **Error Detection**: Gracefully handles syntax errors with clear reporting and context
 - **Code Analysis**: Extracts and displays imports, functions, classes, constants, and variables
 - **Command-Line Interface**: Simple CLI for easy integration into workflows
-- **Zero Dependencies**: Uses only Python standard library (requires Python 3.8+)
+- **Graphical User Interface**: Optional GUI with drag-and-drop support for easy file conversion
+- **Zero Core Dependencies**: Converter uses only Python standard library (requires Python 3.8+)
 
 ## Installation
 
-No installation required! The tool uses only Python standard library modules.
+No installation required for the command-line interface! The core converter uses only Python standard library modules.
+
+For the graphical user interface with drag-and-drop support, you need to install the optional dependency:
 
 ```bash
 # Make sure you have Python 3.8+
 python --version
 
-# Download or copy the py_to_md.py script
+# Install tkinterdnd2 for drag-and-drop support in the GUI
+pip install tkinterdnd2
+
+# Download or copy the py_to_md_gui.py script
 # Make it executable (optional)
-chmod +x py_to_md.py
+chmod +x py_to_md_gui.py
 ```
 
 ## Usage
@@ -202,7 +208,8 @@ The structured markdown output helps AI models by:
 ## Requirements
 
 - Python 3.8+ (for improved AST error messages and f-string debugging)
-- No external dependencies
+- Core converter: No external dependencies (uses only Python standard library)
+- GUI drag-and-drop feature: Requires `tkinterdnd2` (install via `pip install tkinterdnd2`)
 
 ## License
 

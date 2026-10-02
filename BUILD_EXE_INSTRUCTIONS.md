@@ -6,13 +6,14 @@ This guide explains how to convert the Python GUI application into a standalone 
 
 1. Python 3.8+ installed on your system
 2. PyInstaller installed: `pip install pyinstaller`
+3. tkinterdnd2 installed (for drag-and-drop support): `pip install tkinterdnd2`
 
 ## Step-by-Step Instructions
 
-### 1. Install PyInstaller
+### 1. Install Dependencies
 Open Command Prompt or PowerShell and run:
 ```bash
-pip install pyinstaller
+pip install pyinstaller tkinterdnd2
 ```
 
 ### 2. Navigate to the Project Directory
@@ -23,7 +24,7 @@ cd C:\Personal Projects\Py_to_MD
 ### 3. Build the Executable
 Run PyInstaller with the following command to create a single-file executable:
 ```bash
-pyinstaller --onefile --windowed py_to_md_gui.py
+pyinstaller --onefile --windowed --hidden-import=tkinterdnd2 py_to_md_gui.py
 ```
 
 ### Explanation of Flags:
